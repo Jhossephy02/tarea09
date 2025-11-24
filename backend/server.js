@@ -106,6 +106,15 @@ function inicializarDB() {
             UNIQUE(id_usuario, id_moto)
         )`);
 
+        // NUEVA TABLA: Tasas de Cambio para la conversión (Moneda por Ciudad/País)
+        db.run(`CREATE TABLE IF NOT EXISTS tasas_cambio (
+            id_tasa INTEGER PRIMARY KEY AUTOINCREMENT,
+            pais TEXT NOT NULL UNIQUE,
+            moneda TEXT NOT NULL,
+            tasa_a_usd REAL NOT NULL,
+            simbolo TEXT NOT NULL
+        )`);
+
         // Insertar datos de prueba
         insertarDatosPrueba();
     });
@@ -172,8 +181,21 @@ function insertarDatosPrueba() {
                             cilindrada, tipo_motor, transmision, estado, descripcion, imagen_principal, stock, destacada) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, moto);
                 });
+                
+                // NUEVAS TASAS DE CAMBIO
+                const tasas = [
+                    ['Perú', 'PEN', 0.27, 'S/'], // Sol Peruano (PEN)
+                    ['Chile', 'CLP', 0.0010, '$'], // Peso Chileno (CLP)
+                    ['Colombia', 'COP', 0.00025, '$'], // Peso Colombiano (COP)
+                    ['Estados Unidos', 'USD', 1.00, '$'], // Dólar (USD - Base)
+                    ['México', 'MXN', 0.058, '$'] // Peso Mexicano (MXN)
+                ];
 
-                console.log('✅ Datos de prueba insertados correctamente');
+                tasas.forEach(tasa => {
+                    db.run('INSERT INTO tasas_cambio (pais, moneda, tasa_a_usd, simbolo) VALUES (?, ?, ?, ?)', tasa);
+                });
+
+                console.log('✅ Datos de prueba (incl. tasas) insertados correctamente');
             }, 500);
         }
     });
@@ -301,7 +323,90 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ============================================
-// RUTAS DE MOTOS
+// NUEVAS RUTAS DE USUARIO Y PERFIL
+// ============================================
+
+// Obtener perfil del usuario (verificarToken es necesario)
+app.get('/api/usuario/perfil', verificarToken, (req, res) => {
+    db.get(
+        'SELECT id_usuario, nombre_completo, email, telefono, fecha_registro FROM usuarios WHERE id_usuario = ?',
+        [req.userId],
+        (err, user) => {
+            if (err) {
+                return res.status(500).json({ error: 'Error al obtener perfil' });
+            }
+            if (!user) {
+                return res.status(404).json({ error: 'Usuario no encontrado' });
+            }
+            res.json({ success: true, data: user });
+        }
+    );
+});
+
+// Actualizar perfil del usuario
+app.put('/api/usuario/perfil', verificarToken, (req, res) => {
+    const { nombre_completo, telefono } = req.body;
+
+    if (!nombre_completo) {
+        return res.status(400).json({ error: 'El nombre completo es requerido' });
+    }
+
+    db.run(
+        'UPDATE usuarios SET nombre_completo = ?, telefono = ? WHERE id_usuario = ?',
+        [nombre_completo, telefono || null, req.userId],
+        function(err) {
+            if (err) {
+                return res.status(500).json({ error: 'Error al actualizar perfil' });
+            }
+            res.json({ success: true, message: 'Perfil actualizado exitosamente' });
+        }
+    );
+});
+
+
+// ============================================
+// NUEVAS RUTAS DE CONVERSIÓN Y PRECIOS
+// ============================================
+
+// Obtener todas las tasas de cambio
+app.get('/api/conversion/tasas', (req, res) => {
+    db.all('SELECT pais, moneda, tasa_a_usd, simbolo FROM tasas_cambio ORDER BY pais', (err, tasas) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error al obtener tasas de cambio' });
+        }
+        res.json({ success: true, data: tasas });
+    });
+});
+
+
+// ============================================
+// NUEVA RUTA DE COTIZACIONES DE USUARIO
+// ============================================
+
+// Obtener cotizaciones del usuario
+app.get('/api/mis-cotizaciones', verificarToken, (req, res) => {
+    db.all(`
+        SELECT c.*, m.modelo, ma.nombre as marca_nombre
+        FROM cotizaciones c
+        JOIN motos m ON c.id_moto = m.id_moto
+        LEFT JOIN marcas ma ON m.id_marca = ma.id_marca
+        WHERE c.id_usuario = ?
+        ORDER BY c.fecha_cotizacion DESC
+    `, [req.userId], (err, cotizaciones) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error al obtener cotizaciones' });
+        }
+        
+        res.json({
+            success: true,
+            data: cotizaciones
+        });
+    });
+});
+
+
+// ============================================
+// RUTAS DE MOTOS (Existentes)
 // ============================================
 
 // Obtener todas las motos

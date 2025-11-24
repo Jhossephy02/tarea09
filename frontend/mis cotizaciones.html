@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoStore - Mis Cotizaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    
+    <nav class="bg-black/30 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <a href="Catálogo.html" class="text-2xl font-bold text-white flex items-center">
+                    <i class="fas fa-motorcycle mr-2 text-blue-400"></i>
+                    MotoStore
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <button onclick="alternarTema()" class="text-white/80 hover:text-white transition-colors">
+                        <i id="themeIcon" class="fas fa-sun text-xl"></i> 
+                    </button>
+
+                    <div class="relative group">
+                        <button class="text-white/80 hover:text-white transition-colors flex items-center space-x-1">
+                            <i class="fas fa-user-circle text-xl"></i>
+                            <i class="fas fa-caret-down"></i>
+                        </button>
+                        <div class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 overflow-hidden ring-1 ring-black ring-opacity-5">
+                            <a href="perfil.html" class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-user-cog mr-2"></i> Mi Perfil</a>
+                            <a href="favoritos.html" class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-heart mr-2"></i> Mis Favoritos</a>
+                            <a href="mis-cotizaciones.html" class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors bg-blue-50 dark:bg-blue-900"><i class="fas fa-file-invoice mr-2"></i> Mis Cotizaciones</a>
+                            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                            <button onclick="cerrarSesion()" class="w-full text-left px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-extrabold text-gray-800 dark:text-white mb-8 border-b border-green-400/50 pb-2 flex items-center">
+            <i class="fas fa-file-invoice text-green-500 mr-3"></i> Mi Historial de Cotizaciones
+        </h1>
+
+        <div id="lista-cotizaciones" class="space-y-6">
+            </div>
+
+        <p id="mensaje-cotizaciones" class="text-center text-xl text-gray-600 dark:text-gray-400 mt-10 hidden">Cargando historial de cotizaciones...</p>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        const listaCotizacionesDiv = document.getElementById('lista-cotizaciones');
+        const mensajeCotizaciones = document.getElementById('mensaje-cotizaciones');
+
+        // ============================================
+        // FUNCIONES DE TEMA Y AUTENTICACIÓN
+        // ============================================
+        
+        // Función para alternar el tema (Copiada del Catálogo)
+        function alternarTema() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+        
+        // Aplicar tema al cargar (Copiada del Catálogo)
+        function aplicarTemaInicial() {
+            const savedTheme = localStorage.getItem('theme') || 'dark'; 
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+
+            if (savedTheme === 'light') {
+                html.classList.remove('dark');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+
+        function cerrarSesion() {
+            if (confirm('¿Deseas cerrar sesión?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE COTIZACIONES
+        // ============================================
+
+        async function cargarCotizaciones() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            listaCotizacionesDiv.innerHTML = '';
+            mensajeCotizaciones.innerText = 'Cargando historial de cotizaciones...';
+            mensajeCotizaciones.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_URL}/mis-cotizaciones`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success && data.data.length > 0) {
+                    mostrarCotizaciones(data.data);
+                    mensajeCotizaciones.classList.add('hidden');
+                } else {
+                    listaCotizacionesDiv.innerHTML = '';
+                    mensajeCotizaciones.innerText = 'No has realizado ninguna solicitud de cotización.';
+                    mensajeCotizaciones.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error('Error al cargar cotizaciones:', error);
+                mensajeCotizaciones.innerText = 'Error al cargar cotizaciones. Intenta de nuevo más tarde.';
+                mensajeCotizaciones.classList.remove('hidden');
+            }
+        }
+
+        function mostrarCotizaciones(cotizaciones) {
+            let html = '';
+            cotizaciones.forEach(cotizacion => {
+                let badgeClass;
+                let estadoTexto;
+
+                switch (cotizacion.estado) {
+                    case 'respondida':
+                        badgeClass = 'bg-green-500 text-white';
+                        estadoTexto = 'RESPONDIDA';
+                        break;
+                    case 'cerrada':
+                        badgeClass = 'bg-gray-500 text-white';
+                        estadoTexto = 'CERRADA';
+                        break;
+                    case 'pendiente':
+                    default:
+                        badgeClass = 'bg-yellow-500 text-gray-900';
+                        estadoTexto = 'PENDIENTE';
+                        break;
+                }
+
+                html += `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border-l-4 border-blue-500">
+                        <div class="flex justify-between items-start mb-3">
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                                Cotización para: ${cotizacion.marca_nombre} ${cotizacion.modelo}
+                            </h2>
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full ${badgeClass}">${estadoTexto}</span>
+                        </div>
+                        
+                        <div class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
+                            <p><strong><i class="fas fa-calendar-alt mr-2"></i> Fecha:</strong> ${new Date(cotizacion.fecha_cotizacion).toLocaleString()}</p>
+                            <p><strong><i class="fas fa-phone-alt mr-2"></i> Contacto:</strong> ${cotizacion.telefono_contacto}</p>
+                            ${cotizacion.mensaje ? `<p><strong><i class="fas fa-comment-dots mr-2"></i> Mensaje:</strong> ${cotizacion.mensaje}</p>` : ''}
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <a href="Catálogo.html" class="text-blue-500 hover:text-blue-600 font-medium text-sm">
+                                <i class="fas fa-motorcycle mr-1"></i> Ver moto en catálogo
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+            listaCotizacionesDiv.innerHTML = html;
+        }
+
+        // Inicializar al cargar la página
+        window.onload = function() {
+            aplicarTemaInicial();
+            cargarCotizaciones();
+        };
+
+    </script>
+</body>
+</html>

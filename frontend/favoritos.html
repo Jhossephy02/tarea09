@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoStore - Favoritos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .moto-card {
+            transition: all 0.3s ease;
+        }
+        .moto-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Estilos del body ajustados para usar las clases de Tailwind */
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    
+    <nav class="bg-black/30 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <a href="Catálogo.html" class="text-2xl font-bold text-white flex items-center">
+                    <i class="fas fa-motorcycle mr-2 text-blue-400"></i>
+                    MotoStore
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <button onclick="alternarTema()" class="text-white/80 hover:text-white transition-colors">
+                        <i id="themeIcon" class="fas fa-sun text-xl"></i> 
+                    </button>
+
+                    <div class="relative group">
+                        <button class="text-white/80 hover:text-white transition-colors flex items-center space-x-1">
+                            <i class="fas fa-user-circle text-xl"></i>
+                            <i class="fas fa-caret-down"></i>
+                        </button>
+                        <div class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 overflow-hidden ring-1 ring-black ring-opacity-5">
+                            <a href="perfil.html" class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-user-cog mr-2"></i> Mi Perfil</a>
+                            <a href="favoritos.html" class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors bg-blue-50 dark:bg-blue-900"><i class="fas fa-heart mr-2"></i> Mis Favoritos</a>
+                            <a href="mis-cotizaciones.html" class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-file-invoice mr-2"></i> Mis Cotizaciones</a>
+                            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                            <button onclick="cerrarSesion()" class="w-full text-left px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-extrabold text-gray-800 dark:text-white mb-8 border-b border-red-400/50 pb-2 flex items-center">
+            <i class="fas fa-heart text-red-500 mr-3"></i> Mis Motocicletas Favoritas
+        </h1>
+
+        <div id="lista-favoritos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+
+        <p id="mensaje-favoritos" class="text-center text-xl text-gray-600 dark:text-gray-400 mt-10 hidden">Cargando favoritos...</p>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        const listaFavoritosDiv = document.getElementById('lista-favoritos');
+        const mensajeFavoritos = document.getElementById('mensaje-favoritos');
+
+        // ============================================
+        // FUNCIONES DE TEMA Y AUTENTICACIÓN
+        // ============================================
+        
+        // Función para alternar el tema (Copiada del Catálogo)
+        function alternarTema() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+        
+        // Aplicar tema al cargar (Copiada del Catálogo)
+        function aplicarTemaInicial() {
+            const savedTheme = localStorage.getItem('theme') || 'dark'; 
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+
+            if (savedTheme === 'light') {
+                html.classList.remove('dark');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+        
+        function cerrarSesion() {
+            if (confirm('¿Deseas cerrar sesión?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE FAVORITOS
+        // ============================================
+
+        async function cargarFavoritos() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            listaFavoritosDiv.innerHTML = '';
+            mensajeFavoritos.innerText = 'Cargando tus favoritos...';
+            mensajeFavoritos.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_URL}/favoritos`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success && data.data.length > 0) {
+                    mostrarFavoritos(data.data);
+                    mensajeFavoritos.classList.add('hidden');
+                } else {
+                    listaFavoritosDiv.innerHTML = '';
+                    mensajeFavoritos.innerText = 'No tienes motocicletas guardadas en favoritos.';
+                    mensajeFavoritos.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error('Error al cargar favoritos:', error);
+                mensajeFavoritos.innerText = 'Error al cargar favoritos. Intenta de nuevo más tarde.';
+                mensajeFavoritos.classList.remove('hidden');
+            }
+        }
+
+        function mostrarFavoritos(motos) {
+            let html = '';
+            motos.forEach(moto => {
+                const badgeEstado = moto.estado === 'nueva' 
+                    ? `<span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-500 text-white">NUEVA</span>` 
+                    : `<span class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-gray-900">USADA</span>`;
+                
+                // Nota: Usamos USD ($) por simplicidad en esta página
+                const precioFormateado = (moto.precio).toFixed(2);
+                const simboloMoneda = '$'; 
+
+                html += `
+                    <div class="moto-card bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-2xl overflow-hidden relative">
+                        <img src="${moto.imagen_principal || 'https://via.placeholder.com/600x400?text=Moto+Store'}" alt="${moto.modelo}" class="w-full h-56 object-cover">
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-3">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">${moto.marca_nombre} ${moto.modelo}</h2>
+                                ${badgeEstado}
+                            </div>
+                            
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">${moto.categoria_nombre} | ${moto.año} | ${moto.cilindrada}cc</p>
+                            
+                            <div class="flex justify-between items-center mt-4">
+                                <span class="text-3xl font-bold text-red-500 dark:text-red-400">${simboloMoneda}${precioFormateado}</span>
+                                <div class="flex space-x-3">
+                                    <button onclick="eliminarDeFavoritos(${moto.id_moto})" class="p-3 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" title="Eliminar de Favoritos">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    <a href="Catálogo.html" class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors shadow-md flex items-center" title="Volver al Catálogo">
+                                        <i class="fas fa-eye mr-2"></i> Ver Detalles
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            listaFavoritosDiv.innerHTML = html;
+        }
+
+        async function eliminarDeFavoritos(idMoto) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta moto de tus favoritos?')) {
+                return;
+            }
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch(`${API_URL}/favoritos/${idMoto}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.status === 204 || response.ok) {
+                    alert('✅ Moto eliminada de favoritos.');
+                    cargarFavoritos(); // Recargar la lista
+                } else {
+                    const data = await response.json();
+                    alert(`❌ Error al eliminar: ${data.error || 'Intenta de nuevo.'}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error de red al eliminar de favoritos.');
+            }
+        }
+        
+        // Inicializar al cargar la página
+        window.onload = function() {
+            aplicarTemaInicial();
+            cargarFavoritos();
+        };
+
+    </script>
+</body>
+</html>

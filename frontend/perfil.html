@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoStore - Mi Perfil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    
+    <nav class="bg-black/30 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <a href="Catálogo.html" class="text-2xl font-bold text-white flex items-center">
+                    <i class="fas fa-motorcycle mr-2 text-blue-400"></i>
+                    MotoStore
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <button onclick="alternarTema()" class="text-white/80 hover:text-white transition-colors">
+                        <i id="themeIcon" class="fas fa-sun text-xl"></i> 
+                    </button>
+
+                    <div class="relative group">
+                        <button class="text-white/80 hover:text-white transition-colors flex items-center space-x-1">
+                            <i class="fas fa-user-circle text-xl"></i>
+                            <i class="fas fa-caret-down"></i>
+                        </button>
+                        <div class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl z-50 overflow-hidden ring-1 ring-black ring-opacity-5">
+                            <a href="perfil.html" class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors bg-blue-50 dark:bg-blue-900"><i class="fas fa-user-cog mr-2"></i> Mi Perfil</a>
+                            <a href="favoritos.html" class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-heart mr-2"></i> Mis Favoritos</a>
+                            <a href="mis-cotizaciones.html" class="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-file-invoice mr-2"></i> Mis Cotizaciones</a>
+                            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                            <button onclick="cerrarSesion()" class="w-full text-left px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-xl mx-auto bg-white dark:bg-gray-800 p-8 md:p-10 rounded-xl shadow-2xl">
+            <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white mb-6 border-b border-blue-500/50 pb-2 flex items-center">
+                <i class="fas fa-user-cog text-blue-500 mr-3"></i> Administrar Mi Perfil
+            </h1>
+
+            <form id="form-perfil">
+                
+                <div class="mb-4">
+                    <label for="nombre_completo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre Completo</label>
+                    <input type="text" id="nombre_completo" name="nombre_completo" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email (No Modificable)</label>
+                    <input type="email" id="email" name="email" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400" readonly>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="telefono" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono (Opcional)</label>
+                    <input type="tel" id="telefono" name="telefono" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+                    <p id="fecha_registro"></p>
+                </div>
+
+                <button type="submit" id="btn-guardar" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center">
+                    <i class="fas fa-save mr-2"></i> Guardar Cambios
+                </button>
+            </form>
+            <p id="mensaje-perfil" class="text-center mt-4 hidden"></p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        const formPerfil = document.getElementById('form-perfil');
+        const mensajePerfil = document.getElementById('mensaje-perfil');
+        const token = localStorage.getItem('token');
+        
+        // ============================================
+        // FUNCIONES DE TEMA Y AUTENTICACIÓN
+        // ============================================
+        
+        // Función para alternar el tema (Copiada del Catálogo)
+        function alternarTema() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+        
+        // Aplicar tema al cargar (Copiada del Catálogo)
+        function aplicarTemaInicial() {
+            const savedTheme = localStorage.getItem('theme') || 'dark'; 
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+
+            if (savedTheme === 'light') {
+                html.classList.remove('dark');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+
+        function cerrarSesion() {
+            if (confirm('¿Deseas cerrar sesión?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        }
+        
+        // ============================================
+        // FUNCIONES DE PERFIL
+        // ============================================
+
+        async function cargarPerfil() {
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/usuario/perfil`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const user = data.data;
+                    document.getElementById('nombre_completo').value = user.nombre_completo;
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('telefono').value = user.telefono || '';
+                    document.getElementById('fecha_registro').innerText = `Miembro desde: ${new Date(user.fecha_registro).toLocaleDateString()}`;
+                } else {
+                    mostrarMensaje('❌ Error al cargar tu perfil. ¿Token inválido?', 'error');
+                }
+            } catch (error) {
+                console.error('Error al cargar perfil:', error);
+                mostrarMensaje('❌ Error de conexión con el servidor.', 'error');
+            }
+        }
+
+        formPerfil.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btn-guardar');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
+            btn.disabled = true;
+
+            const nombre_completo = document.getElementById('nombre_completo').value;
+            const telefono = document.getElementById('telefono').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/usuario/perfil`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ nombre_completo, telefono })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarMensaje('✅ Perfil actualizado exitosamente!', 'success');
+                    // Actualizar nombre en el local storage si es necesario
+                    const userLocal = JSON.parse(localStorage.getItem('user'));
+                    if (userLocal) {
+                        userLocal.nombre = nombre_completo;
+                        localStorage.setItem('user', JSON.stringify(userLocal));
+                    }
+                } else {
+                    mostrarMensaje(`❌ Error al actualizar: ${data.error || 'Intenta de nuevo.'}`, 'error');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('❌ Error de red al intentar guardar.', 'error');
+            } finally {
+                btn.innerHTML = '<i class="fas fa-save mr-2"></i> Guardar Cambios';
+                btn.disabled = false;
+            }
+        });
+
+        function mostrarMensaje(mensaje, tipo) {
+            mensajePerfil.innerText = mensaje;
+            mensajePerfil.classList.remove('hidden', 'text-green-500', 'text-red-500');
+            if (tipo === 'success') {
+                mensajePerfil.classList.add('text-green-500');
+            } else {
+                mensajePerfil.classList.add('text-red-500');
+            }
+        }
+
+        // Inicializar al cargar la página
+        window.onload = function() {
+            aplicarTemaInicial();
+            cargarPerfil();
+        };
+
+    </script>
+</body>
+</html>

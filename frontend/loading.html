@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoStore - Cargando...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            animation: spin 1.5s linear infinite;
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center fade-in">
+    
+    <div class="text-center">
+        <i class="fas fa-motorcycle text-8xl text-blue-500 spinner shadow-lg" style="--fa-animation-duration: 2s;"></i>
+
+        <h1 class="text-4xl font-extrabold text-white mt-8 tracking-widest">
+            MOTOSTORE
+        </h1>
+        <p class="text-lg text-gray-400 mt-2">
+            Preparando el catálogo con las mejores ofertas...
+        </p>
+
+        <div class="w-64 mx-auto mt-8 bg-gray-700 rounded-full h-2.5">
+            <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-1000 ease-in-out" style="width: 10%;"></div>
+        </div>
+        <p id="progress-text" class="text-sm text-gray-400 mt-2">10%</p>
+    </div>
+
+    <script>
+        // Función de animación de la barra de progreso
+        function simularCarga() {
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            let progress = 10;
+            
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = `${progress}%`;
+                progressText.innerText = `${progress}%`;
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    // Una vez completada la carga simulada, redirige al Catálogo
+                    setTimeout(() => {
+                        window.location.href = 'Catálogo.html';
+                    }, 500); // Pequeña pausa para ver el 100%
+                }
+            }, 500); // Simula que la carga toma 5 segundos en total
+        }
+
+        // Simular que la carga comienza 1 segundo después de que la página se abre
+        setTimeout(simularCarga, 1000); 
+    </script>
+</body>
+</html>

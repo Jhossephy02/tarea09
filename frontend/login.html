@@ -472,9 +472,9 @@
                         
                         showMessage(`✅ Bienvenido ${data.user.nombre}!`, 'success');
                         
-                        // Redirigir al catálogo
+                        // Redirigir a la ventana de carga
                         setTimeout(() => {
-                            window.location.href = 'Catálogo.html';
+                            window.location.href = 'loading.html'; // <--- ¡AQUÍ ESTÁ EL CAMBIO!
                         }, 1500);
                     } else {
                         showMessage('✅ Cuenta creada exitosamente! Ahora puedes iniciar sesión.', 'success');
@@ -498,7 +498,7 @@
             }
         });
 
-        // Verificar si ya hay sesión
+        // Verificar si ya hay sesión (mantiene redirección directa al Catálogo para usuarios ya autenticados)
         const token = localStorage.getItem('token');
         if (token) {
             window.location.href = 'Catálogo.html';
