@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Autenticación</title>
+    <title>MotoStore - Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -18,7 +18,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        /* Animaciones de fondo */
         @keyframes blob {
             0%, 100% { transform: translate(0, 0) scale(1); }
             25% { transform: translate(20px, -50px) scale(1.1); }
@@ -124,7 +123,6 @@
             left: -4px;
         }
 
-        /* Spinner loading */
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -140,27 +138,22 @@
     </style>
 </head>
 <body>
-    <div id="background" class="min-h-screen relative overflow-hidden transition-all duration-1000" style="background: linear-gradient(to bottom, #4c1d95, #581c87, #7c2d8e, #c084fc, #e879f9);">
+    <div id="background" class="min-h-screen relative overflow-hidden transition-all duration-1000" style="background: linear-gradient(to bottom, #0f172a, #1e293b, #334155, #475569, #64748b);">
         
-        <!-- Círculos animados de fondo -->
-        <div class="absolute top-0 left-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
         <div class="absolute bottom-0 left-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
         
-        <!-- Estrellas -->
         <div id="stars" class="absolute inset-0 pointer-events-none"></div>
         
-        <!-- Patrón de puntos -->
         <div class="absolute inset-0 opacity-10">
             <div class="absolute inset-0" style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 50px 50px;"></div>
         </div>
 
-        <!-- Montañas -->
         <div class="mountain mountain-1"></div>
         <div class="mountain mountain-2"></div>
         <div class="mountain mountain-3"></div>
         
-        <!-- Árboles -->
         <div class="tree" style="left: 10%; bottom: 200px;"></div>
         <div class="tree" style="left: 15%; bottom: 190px;"></div>
         <div class="tree" style="left: 25%; bottom: 250px;"></div>
@@ -168,183 +161,143 @@
         <div class="tree" style="right: 25%; bottom: 240px;"></div>
         <div class="tree" style="right: 12%; bottom: 195px;"></div>
 
-        <!-- Selector de temas -->
         <div class="absolute top-8 right-8 z-50 flex gap-3">
-            <button onclick="changeTheme('purple')" class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 border-2 border-white shadow-lg hover:scale-110 transition-transform" title="Tema Púrpura"></button>
+            <button onclick="changeTheme('dark')" class="w-12 h-12 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 border-2 border-white shadow-lg hover:scale-110 transition-transform" title="Tema Oscuro"></button>
             <button onclick="changeTheme('blue')" class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-cyan-400 border-2 border-white shadow-lg hover:scale-110 transition-transform" title="Tema Azul"></button>
+            <button onclick="changeTheme('purple')" class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 border-2 border-white shadow-lg hover:scale-110 transition-transform" title="Tema Púrpura"></button>
             <button onclick="changeTheme('green')" class="w-12 h-12 rounded-full bg-gradient-to-br from-green-600 to-emerald-400 border-2 border-white shadow-lg hover:scale-110 transition-transform" title="Tema Verde"></button>
-            <button onclick="changeTheme('orange')" class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-red-400 border-2 border-white shadow-lg hover:scale-110 transition-transform" title="Tema Naranja"></button>
         </div>
 
-        <!-- Contenido Principal -->
         <div class="relative min-h-screen flex items-center justify-center p-4">
             <div class="w-full max-w-md relative z-10">
                 
-                <!-- Elementos decorativos flotantes -->
-                <div class="absolute -top-10 -left-10 w-20 h-20 bg-purple-500 rounded-full blur-2xl opacity-40 animate-pulse"></div>
-                <div class="absolute -bottom-10 -right-10 w-20 h-20 bg-blue-500 rounded-full blur-2xl opacity-40 animate-pulse animation-delay-1000"></div>
+                <div class="absolute -top-10 -left-10 w-20 h-20 bg-blue-500 rounded-full blur-2xl opacity-40 animate-pulse"></div>
+                <div class="absolute -bottom-10 -right-10 w-20 h-20 bg-cyan-500 rounded-full blur-2xl opacity-40 animate-pulse animation-delay-1000"></div>
 
-                <!-- Card Principal -->
                 <div class="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20 relative">
                     
-                    <!-- Brillo superior -->
                     <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent"></div>
                     
-                    <!-- Header -->
-                    <div class="relative bg-gradient-to-br from-purple-600/40 via-blue-600/40 to-indigo-600/40 backdrop-blur-sm p-8 text-white text-center border-b border-white/10">
+                    <div class="relative bg-gradient-to-br from-blue-600/40 via-cyan-600/40 to-indigo-600/40 backdrop-blur-sm p-8 text-white text-center border-b border-white/10">
                         
-                        <!-- Partículas brillantes -->
                         <div class="absolute top-4 left-4">
                             <i class="fas fa-sparkles text-yellow-300 animate-pulse"></i>
                         </div>
                         <div class="absolute top-6 right-6">
-                            <i class="fas fa-sparkles text-pink-300 animate-pulse animation-delay-500"></i>
-                        </div>
-                        <div class="absolute bottom-4 left-1/3">
-                            <i class="fas fa-sparkles text-blue-300 animate-pulse animation-delay-1000"></i>
+                            <i class="fas fa-sparkles text-cyan-300 animate-pulse animation-delay-500"></i>
                         </div>
 
-                        <!-- Logo animado -->
                         <div class="relative w-24 h-24 mx-auto mb-4">
                             <div class="absolute inset-0 border-4 border-white/30 rounded-full animate-spin-slow"></div>
-                            <div class="absolute inset-2 border-4 border-purple-400/50 rounded-full animate-spin-reverse"></div>
+                            <div class="absolute inset-2 border-4 border-cyan-400/50 rounded-full animate-spin-reverse"></div>
                             <div class="absolute inset-4 bg-white rounded-full flex items-center justify-center shadow-lg">
-                                <i class="fas fa-lock text-purple-600 text-3xl"></i>
+                                <i class="fas fa-motorcycle text-blue-600 text-3xl"></i>
                             </div>
                         </div>
 
-                        <h1 id="headerTitle" class="text-4xl font-bold mb-2 bg-gradient-to-r from-white via-purple-100 to-blue-100 bg-clip-text text-transparent">
-                            Bienvenido de nuevo
+                        <h1 id="headerTitle" class="text-4xl font-bold mb-2 bg-gradient-to-r from-white via-cyan-100 to-blue-100 bg-clip-text text-transparent">
+                            🏍️ MotoStore
                         </h1>
-                        <p id="headerSubtitle" class="text-purple-100">
-                            Ingresa a tu cuenta para continuar
+                        <p id="headerSubtitle" class="text-cyan-100">
+                            Tu tienda de motocicletas de confianza
                         </p>
                     </div>
 
-                    <!-- Contenido del formulario -->
                     <div class="p-8 bg-white/5 backdrop-blur-sm">
                         
-                        <!-- Mensajes -->
                         <div id="messageBox" class="hidden mb-6 p-4 rounded-xl text-center font-medium backdrop-blur-sm border"></div>
 
-                        <!-- Formulario -->
                         <form id="authForm" class="space-y-4">
                             
-                            <!-- Campo Nombre (solo registro) -->
                             <div id="nameField" class="hidden">
                                 <label class="block text-sm font-medium text-white/90 mb-2">
                                     Nombre Completo
                                 </label>
                                 <div class="relative group">
-                                    <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 group-focus-within:text-purple-400 transition-colors"></i>
+                                    <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-cyan-300 group-focus-within:text-cyan-400 transition-colors"></i>
                                     <input
                                         type="text"
                                         id="name"
-                                        class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition backdrop-blur-sm text-white placeholder-white/50"
+                                        class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition backdrop-blur-sm text-white placeholder-white/50"
                                         placeholder="Juan Pérez"
                                     />
                                 </div>
                             </div>
 
-                            <!-- Campo Email -->
+                            <div id="phoneField" class="hidden">
+                                <label class="block text-sm font-medium text-white/90 mb-2">
+                                    Teléfono (Opcional)
+                                </label>
+                                <div class="relative group">
+                                    <i class="fas fa-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-cyan-300 group-focus-within:text-cyan-400 transition-colors"></i>
+                                    <input
+                                        type="tel"
+                                        id="phone"
+                                        class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition backdrop-blur-sm text-white placeholder-white/50"
+                                        placeholder="+51 999 999 999"
+                                    />
+                                </div>
+                            </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-white/90 mb-2">
                                     Correo Electrónico
                                 </label>
                                 <div class="relative group">
-                                    <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 group-focus-within:text-purple-400 transition-colors"></i>
+                                    <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-cyan-300 group-focus-within:text-cyan-400 transition-colors"></i>
                                     <input
                                         type="email"
                                         id="email"
                                         required
-                                        class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition backdrop-blur-sm text-white placeholder-white/50"
+                                        class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition backdrop-blur-sm text-white placeholder-white/50"
                                         placeholder="correo@ejemplo.com"
                                     />
                                 </div>
                             </div>
 
-                            <!-- Campo Contraseña -->
                             <div>
                                 <label class="block text-sm font-medium text-white/90 mb-2">
                                     Contraseña
                                 </label>
                                 <div class="relative group">
-                                    <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 group-focus-within:text-purple-400 transition-colors"></i>
+                                    <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-cyan-300 group-focus-within:text-cyan-400 transition-colors"></i>
                                     <input
                                         type="password"
                                         id="password"
                                         required
-                                        class="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition backdrop-blur-sm text-white placeholder-white/50"
+                                        class="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition backdrop-blur-sm text-white placeholder-white/50"
                                         placeholder="••••••••"
                                     />
                                     <button
                                         type="button"
                                         onclick="togglePassword()"
-                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-purple-200 transition-colors"
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyan-300 hover:text-cyan-200 transition-colors"
                                     >
                                         <i id="eyeIcon" class="fas fa-eye"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Remember me y Forgot password (solo login) -->
                             <div id="loginOptions" class="flex items-center justify-between">
                                 <label class="flex items-center group cursor-pointer">
-                                    <input type="checkbox" id="remember" class="rounded border-white/30 bg-white/10 text-purple-600 focus:ring-purple-500 focus:ring-offset-0" />
+                                    <input type="checkbox" id="remember" class="rounded border-white/30 bg-white/10 text-cyan-600 focus:ring-cyan-500 focus:ring-offset-0" />
                                     <span class="ml-2 text-sm text-white/80 group-hover:text-white transition-colors">Recordarme</span>
                                 </label>
-                                <button type="button" onclick="alert('Funcionalidad de recuperación de contraseña')" class="text-sm text-purple-300 hover:text-purple-200 font-medium transition-colors">
-                                    ¿Olvidaste tu contraseña?
-                                </button>
                             </div>
 
-                            <!-- Botón Submit -->
                             <button
                                 type="submit"
                                 id="submitBtn"
-                                class="w-full relative bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-[1.02] shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 overflow-hidden group"
+                                class="w-full relative bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all transform hover:scale-[1.02] shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 overflow-hidden group"
                             >
-                                <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-cyan-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
                                 <span id="btnText" class="relative flex items-center justify-center">
+                                    <i class="fas fa-sign-in-alt mr-2"></i>
                                     Iniciar Sesión
                                 </span>
                             </button>
                         </form>
 
-                        <!-- Divider -->
-                        <div class="relative my-8">
-                            <div class="absolute inset-0 flex items-center">
-                                <div class="w-full border-t border-white/20"></div>
-                            </div>
-                            <div class="relative flex justify-center text-sm">
-                                <span class="px-4 bg-transparent text-white/70 font-medium backdrop-blur-sm">O continúa con</span>
-                            </div>
-                        </div>
-
-                        <!-- Social Login Buttons -->
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="handleSocialAuth('Google')" class="group relative flex items-center justify-center gap-2 py-3 px-4 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl font-medium transition-all transform hover:scale-105 hover:bg-white/20 hover:shadow-lg hover:border-red-400">
-                                <i class="fab fa-google text-red-500 group-hover:scale-110 transition-transform"></i>
-                                <span class="text-white text-sm">Google</span>
-                            </button>
-                            
-                            <button onclick="handleSocialAuth('GitHub')" class="group relative flex items-center justify-center gap-2 py-3 px-4 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl font-medium transition-all transform hover:scale-105 hover:bg-white/20 hover:shadow-lg hover:border-gray-400">
-                                <i class="fab fa-github text-gray-300 group-hover:scale-110 transition-transform"></i>
-                                <span class="text-white text-sm">GitHub</span>
-                            </button>
-                            
-                            <button onclick="handleSocialAuth('LinkedIn')" class="group relative flex items-center justify-center gap-2 py-3 px-4 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl font-medium transition-all transform hover:scale-105 hover:bg-white/20 hover:shadow-lg hover:border-blue-400">
-                                <i class="fab fa-linkedin text-blue-400 group-hover:scale-110 transition-transform"></i>
-                                <span class="text-white text-sm">LinkedIn</span>
-                            </button>
-                            
-                            <button onclick="handleSocialAuth('Apple')" class="group relative flex items-center justify-center gap-2 py-3 px-4 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl font-medium transition-all transform hover:scale-105 hover:bg-white/20 hover:shadow-lg hover:border-gray-300">
-                                <i class="fab fa-apple text-gray-300 group-hover:scale-110 transition-transform"></i>
-                                <span class="text-white text-sm">Apple</span>
-                            </button>
-                        </div>
-
-                        <!-- Toggle Login/Register -->
                         <div class="mt-8 text-center">
                             <p class="text-white/80">
                                 <span id="toggleText">¿No tienes una cuenta?</span>
@@ -352,26 +305,19 @@
                                     type="button"
                                     onclick="toggleAuthMode()"
                                     id="toggleBtn"
-                                    class="ml-2 text-purple-300 hover:text-purple-200 font-semibold transition-colors"
+                                    class="ml-2 text-cyan-300 hover:text-cyan-200 font-semibold transition-colors"
                                 >
-                                    Regístrate
+                                    Regístrate aquí
                                 </button>
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Footer Info -->
                 <div class="mt-6 text-center text-sm text-white/70 backdrop-blur-sm">
                     <p class="flex items-center justify-center gap-2">
                         <i class="fas fa-lock"></i>
-                        Conexión segura mediante OAuth 2.0
-                    </p>
-                    <p class="mt-2">
-                        Al continuar, aceptas nuestros 
-                        <button onclick="alert('Términos y condiciones')" class="text-purple-300 hover:text-purple-200 transition-colors">Términos</button>
-                        y 
-                        <button onclick="alert('Política de privacidad')" class="text-purple-300 hover:text-purple-200 transition-colors">Política de Privacidad</button>
+                        Conexión segura y protegida
                     </p>
                 </div>
             </div>
@@ -379,7 +325,7 @@
     </div>
 
     <script>
-        // Estado de la aplicación
+        const API_URL = 'http://localhost:3000/api';
         let isLogin = true;
         let isLoading = false;
 
@@ -396,14 +342,14 @@
             starsContainer.appendChild(star);
         }
 
-        // Cambiar tema de colores
+        // Cambiar tema
         function changeTheme(theme) {
             const bg = document.getElementById('background');
             const themes = {
-                purple: 'linear-gradient(to bottom, #4c1d95, #581c87, #7c2d8e, #c084fc, #e879f9)',
+                dark: 'linear-gradient(to bottom, #0f172a, #1e293b, #334155, #475569, #64748b)',
                 blue: 'linear-gradient(to bottom, #1e3a8a, #1e40af, #3b82f6, #60a5fa, #93c5fd)',
-                green: 'linear-gradient(to bottom, #064e3b, #065f46, #059669, #34d399, #6ee7b7)',
-                orange: 'linear-gradient(to bottom, #7c2d12, #9a3412, #ea580c, #fb923c, #fdba74)'
+                purple: 'linear-gradient(to bottom, #4c1d95, #581c87, #7c2d8e, #c084fc, #e879f9)',
+                green: 'linear-gradient(to bottom, #064e3b, #065f46, #059669, #34d399, #6ee7b7)'
             };
             bg.style.background = themes[theme];
         }
@@ -425,7 +371,7 @@
         // Mostrar mensaje
         function showMessage(text, type) {
             const messageBox = document.getElementById('messageBox');
-            messageBox.textContent = text;
+            messageBox.innerHTML = text;
             messageBox.className = `mb-6 p-4 rounded-xl text-center font-medium backdrop-blur-sm border ${
                 type === 'success' ? 'bg-green-500/20 text-green-100 border-green-400/30' :
                 type === 'error' ? 'bg-red-500/20 text-red-100 border-red-400/30' :
@@ -433,105 +379,130 @@
             }`;
             messageBox.classList.remove('hidden');
             
-            setTimeout(() => {
-                messageBox.classList.add('hidden');
-            }, 5000);
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 3000);
+            }
         }
 
         // Toggle entre Login y Registro
         function toggleAuthMode() {
             isLogin = !isLogin;
             
-            const headerTitle = document.getElementById('headerTitle');
-            const headerSubtitle = document.getElementById('headerSubtitle');
             const nameField = document.getElementById('nameField');
+            const phoneField = document.getElementById('phoneField');
             const loginOptions = document.getElementById('loginOptions');
             const toggleText = document.getElementById('toggleText');
             const toggleBtn = document.getElementById('toggleBtn');
             const btnText = document.getElementById('btnText');
             
             if (isLogin) {
-                headerTitle.textContent = 'Bienvenido de nuevo';
-                headerSubtitle.textContent = 'Ingresa a tu cuenta para continuar';
                 nameField.classList.add('hidden');
+                phoneField.classList.add('hidden');
                 loginOptions.classList.remove('hidden');
                 toggleText.textContent = '¿No tienes una cuenta?';
-                toggleBtn.textContent = 'Regístrate';
-                btnText.textContent = 'Iniciar Sesión';
+                toggleBtn.textContent = 'Regístrate aquí';
+                btnText.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
             } else {
-                headerTitle.textContent = 'Únete a nosotros';
-                headerSubtitle.textContent = 'Crea tu cuenta en segundos';
                 nameField.classList.remove('hidden');
+                phoneField.classList.remove('hidden');
                 loginOptions.classList.add('hidden');
                 toggleText.textContent = '¿Ya tienes una cuenta?';
                 toggleBtn.textContent = 'Inicia Sesión';
-                btnText.textContent = 'Crear Cuenta';
+                btnText.innerHTML = '<i class="fas fa-user-plus mr-2"></i>Crear Cuenta';
             }
             
-            // Limpiar formulario
             document.getElementById('authForm').reset();
             document.getElementById('messageBox').classList.add('hidden');
         }
 
         // Manejo del formulario
-        document.getElementById('authForm').addEventListener('submit', function(e) {
+        document.getElementById('authForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             if (isLoading) return;
             
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const name = document.getElementById('name').value;
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
             const btnText = document.getElementById('btnText');
+            
+            // Validaciones
+            if (!email || !password) {
+                showMessage('❌ Por favor completa todos los campos requeridos', 'error');
+                return;
+            }
+
+            if (!isLogin && !name) {
+                showMessage('❌ El nombre es requerido para registrarse', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('❌ La contraseña debe tener al menos 6 caracteres', 'error');
+                return;
+            }
             
             isLoading = true;
             btnText.innerHTML = '<div class="spinner inline-block mr-2"></div> Procesando...';
             
-            setTimeout(() => {
-                isLoading = false;
-                
-                if (isLogin) {
-                    btnText.textContent = 'Iniciar Sesión';
-                    showMessage('✅ Inicio de sesión exitoso!', 'success');
-                    console.log('Login:', { email, password });
+            try {
+                const endpoint = isLogin ? '/auth/login' : '/auth/register';
+                const body = isLogin 
+                    ? { email, password }
+                    : { nombre_completo: name, email, password, telefono: phone };
+
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (isLogin) {
+                        // Guardar token y usuario
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        
+                        showMessage(`✅ Bienvenido ${data.user.nombre}!`, 'success');
+                        
+                        // Redirigir al catálogo
+                        setTimeout(() => {
+                            window.location.href = 'Catálogo.html';
+                        }, 1500);
+                    } else {
+                        showMessage('✅ Cuenta creada exitosamente! Ahora puedes iniciar sesión.', 'success');
+                        
+                        setTimeout(() => {
+                            toggleAuthMode();
+                            document.getElementById('email').value = email;
+                        }, 2000);
+                    }
                 } else {
-                    btnText.textContent = 'Crear Cuenta';
-                    showMessage('✅ Registro exitoso! Por favor inicia sesión.', 'success');
-                    console.log('Register:', { name, email, password });
-                    
-                    setTimeout(() => {
-                        toggleAuthMode();
-                    }, 2000);
+                    showMessage(`❌ ${data.error || 'Error en la operación'}`, 'error');
                 }
-            }, 1500);
-        });
-
-        // Autenticación social
-        function handleSocialAuth(provider) {
-            if (isLoading) return;
-            
-            showMessage(`Conectando con ${provider}...`, 'info');
-            
-            setTimeout(() => {
-                showMessage(`✅ Autenticación exitosa con ${provider}!`, 'success');
-                console.log('Social auth:', provider);
-            }, 1500);
-        }
-
-        // Efecto de partículas al mover el mouse
-        document.addEventListener('mousemove', function(e) {
-            if (Math.random() > 0.98) {
-                const particle = document.createElement('div');
-                particle.className = 'star';
-                particle.style.left = e.clientX + 'px';
-                particle.style.top = e.clientY + 'px';
-                particle.style.opacity = '1';
-                particle.style.animation = 'twinkle 1s ease-out forwards';
-                starsContainer.appendChild(particle);
-                
-                setTimeout(() => particle.remove(), 1000);
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('❌ Error de conexión. Verifica que el servidor esté ejecutándose.', 'error');
+            } finally {
+                isLoading = false;
+                btnText.innerHTML = isLogin 
+                    ? '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión'
+                    : '<i class="fas fa-user-plus mr-2"></i>Crear Cuenta';
             }
         });
+
+        // Verificar si ya hay sesión
+        const token = localStorage.getItem('token');
+        if (token) {
+            window.location.href = 'Catálogo.html';
+        }
     </script>
 </body>
 </html>
