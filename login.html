@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Autenticación</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Animaciones de fondo */
+        @keyframes blob {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(20px, -50px) scale(1.1); }
+            50% { transform: translate(-20px, 20px) scale(0.9); }
+            75% { transform: translate(50px, 50px) scale(1.05); }
+        }
+        
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes spin-reverse {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+        
+        .animate-spin-slow {
+            animation: spin-slow 3s linear infinite;
+        }
+        
+        .animate-spin-reverse {
+            animation: spin-reverse 4s linear infinite;
+        }
+        
+        .animation-delay-500 {
+            animation-delay: 0.5s;
+        }
+        
+        .animation-delay-1000 {
+            animation-delay: 1s;
+        }
+        
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+        
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        
+        .mountain {
+            position: absolute;
+            bottom: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+        
+        .mountain-1 {
+            left: -10%;
+            border-width: 0 300px 200px 300px;
+            border-color: transparent transparent rgba(30, 20, 50, 0.3) transparent;
+        }
+        
+        .mountain-2 {
+            left: 15%;
+            border-width: 0 400px 300px 400px;
+            border-color: transparent transparent rgba(20, 10, 40, 0.4) transparent;
+        }
+        
+        .mountain-3 {
+            right: -5%;
+            border-width: 0 350px 250px 350px;
+            border-color: transparent transparent rgba(25, 15, 45, 0.3) transparent;
+        }
+        
+        .tree {
+            position: absolute;
+            bottom: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 15px 80px 15px;
+            border-color: transparent transparent rgba(10, 20, 30, 0.5) transparent;
+        }
+        
+        .tree::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 30px;
+            background: rgba(40, 30, 20, 0.6);
+            bottom: -30px;
+            left: -4px;
+        }
+
+        /* Spinner loading */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.6s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="background" class="min-h-screen relative overflow-hidden transition-all duration-1000" style="background: linear-gradient(to bottom, #4c1d95, #581c87, #7c2d8e, #c084fc, #e879f9);">
+        
+        <!-- Círculos animados de fondo -->
+        <div class="absolute top-0 left-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-0 left-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+        
+        <!-- Estrellas -->
+        <div id="stars" class="absolute inset-0 pointer-events-none"></div>
+        
+        <!-- Patrón de puntos -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 50px 50px;"></div>
+        </div>
+
+        <!-- Montañas -->
+        <div class="mountain mountain-1"></div>
+        <div class="mountain mountain-2"></div>
+        <div class="mountain mountain-3"></div>
+        
+        <!-- Árboles -->
+        <div class="tree" style="left: 10%; bottom: 200px;"></div>
+        <div class="tree" style="left: 15%; bottom: 190px;"></div>
+        <div class="tree" style="left: 25%; bottom: 250px;"></div>
+        <div class="tree" style="right: 20%; bottom: 210px;"></div>
+        <div class="tree" style="right: 25%; bottom: 240px;"></div>
+        <div class="tree" style="right: 12%; bottom: 195px;"></div>
+
+        <!-- Selector de temas -->
+        <div class="absolute top-8 right-8 z-50 flex gap-3">
+            <button onclick="changeTheme('purple')" class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 border-2 border-white shadow-lg hover:scale-110 transition-transform" title="Tema Púrpura"></button>
+            <button onclick="changeTheme('blue')" class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-cyan-400 border-2 border-white shadow-lg hover:scale-110 transition-transform" title="Tema Azul"></button>
+            <button onclick="changeTheme('green')" class="w-12 h-12 rounded-full bg-gradient-to-br from-green-600 to-emerald-400 border-2 border-white shadow-lg hover:scale-110 transition-transform" title="Tema Verde"></button>
+            <button onclick="changeTheme('orange')" class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 to-red-400 border-2 border-white shadow-lg hover:scale-110 transition-transform" title="Tema Naranja"></button>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="w-full max-w-md relative z-10">
+                
+                <!-- Elementos decorativos flotantes -->
+                <div class="absolute -top-10 -left-10 w-20 h-20 bg-purple-500 rounded-full blur-2xl opacity-40 animate-pulse"></div>
+                <div class="absolute -bottom-10 -right-10 w-20 h-20 bg-blue-500 rounded-full blur-2xl opacity-40 animate-pulse animation-delay-1000"></div>
+
+                <!-- Card Principal -->
+                <div class="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20 relative">
+                    
+                    <!-- Brillo superior -->
+                    <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent"></div>
+                    
+                    <!-- Header -->
+                    <div class="relative bg-gradient-to-br from-purple-600/40 via-blue-600/40 to-indigo-600/40 backdrop-blur-sm p-8 text-white text-center border-b border-white/10">
+                        
+                        <!-- Partículas brillantes -->
+                        <div class="absolute top-4 left-4">
+                            <i class="fas fa-sparkles text-yellow-300 animate-pulse"></i>
+                        </div>
+                        <div class="absolute top-6 right-6">
+                            <i class="fas fa-sparkles text-pink-300 animate-pulse animation-delay-500"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-1/3">
+                            <i class="fas fa-sparkles text-blue-300 animate-pulse animation-delay-1000"></i>
+                        </div>
+
+                        <!-- Logo animado -->
+                        <div class="relative w-24 h-24 mx-auto mb-4">
+                            <div class="absolute inset-0 border-4 border-white/30 rounded-full animate-spin-slow"></div>
+                            <div class="absolute inset-2 border-4 border-purple-400/50 rounded-full animate-spin-reverse"></div>
+                            <div class="absolute inset-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                <i class="fas fa-lock text-purple-600 text-3xl"></i>
+                            </div>
+                        </div>
+
+                        <h1 id="headerTitle" class="text-4xl font-bold mb-2 bg-gradient-to-r from-white via-purple-100 to-blue-100 bg-clip-text text-transparent">
+                            Bienvenido de nuevo
+                        </h1>
+                        <p id="headerSubtitle" class="text-purple-100">
+                            Ingresa a tu cuenta para continuar
+                        </p>
+                    </div>
+
+                    <!-- Contenido del formulario -->
+                    <div class="p-8 bg-white/5 backdrop-blur-sm">
+                        
+                        <!-- Mensajes -->
+                        <div id="messageBox" class="hidden mb-6 p-4 rounded-xl text-center font-medium backdrop-blur-sm border"></div>
+
+                        <!-- Formulario -->
+                        <form id="authForm" class="space-y-4">
+                            
+                            <!-- Campo Nombre (solo registro) -->
+                            <div id="nameField" class="hidden">
+                                <label class="block text-sm font-medium text-white/90 mb-2">
+                                    Nombre Completo
+                                </label>
+                                <div class="relative group">
+                                    <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 group-focus-within:text-purple-400 transition-colors"></i>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition backdrop-blur-sm text-white placeholder-white/50"
+                                        placeholder="Juan Pérez"
+                                    />
+                                </div>
+                            </div>
+
+                            <!-- Campo Email -->
+                            <div>
+                                <label class="block text-sm font-medium text-white/90 mb-2">
+                                    Correo Electrónico
+                                </label>
+                                <div class="relative group">
+                                    <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 group-focus-within:text-purple-400 transition-colors"></i>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        required
+                                        class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition backdrop-blur-sm text-white placeholder-white/50"
+                                        placeholder="correo@ejemplo.com"
+                                    />
+                                </div>
+                            </div>
+
+                            <!-- Campo Contraseña -->
+                            <div>
+                                <label class="block text-sm font-medium text-white/90 mb-2">
+                                    Contraseña
+                                </label>
+                                <div class="relative group">
+                                    <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 group-focus-within:text-purple-400 transition-colors"></i>
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        required
+                                        class="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition backdrop-blur-sm text-white placeholder-white/50"
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onclick="togglePassword()"
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-purple-200 transition-colors"
+                                    >
+                                        <i id="eyeIcon" class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Remember me y Forgot password (solo login) -->
+                            <div id="loginOptions" class="flex items-center justify-between">
+                                <label class="flex items-center group cursor-pointer">
+                                    <input type="checkbox" id="remember" class="rounded border-white/30 bg-white/10 text-purple-600 focus:ring-purple-500 focus:ring-offset-0" />
+                                    <span class="ml-2 text-sm text-white/80 group-hover:text-white transition-colors">Recordarme</span>
+                                </label>
+                                <button type="button" onclick="alert('Funcionalidad de recuperación de contraseña')" class="text-sm text-purple-300 hover:text-purple-200 font-medium transition-colors">
+                                    ¿Olvidaste tu contraseña?
+                                </button>
+                            </div>
+
+                            <!-- Botón Submit -->
+                            <button
+                                type="submit"
+                                id="submitBtn"
+                                class="w-full relative bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-[1.02] shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 overflow-hidden group"
+                            >
+                                <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                <span id="btnText" class="relative flex items-center justify-center">
+                                    Iniciar Sesión
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- Divider -->
+                        <div class="relative my-8">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-white/20"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-4 bg-transparent text-white/70 font-medium backdrop-blur-sm">O continúa con</span>
+                            </div>
+                        </div>
+
+                        <!-- Social Login Buttons -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="handleSocialAuth('Google')" class="group relative flex items-center justify-center gap-2 py-3 px-4 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl font-medium transition-all transform hover:scale-105 hover:bg-white/20 hover:shadow-lg hover:border-red-400">
+                                <i class="fab fa-google text-red-500 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-white text-sm">Google</span>
+                            </button>
+                            
+                            <button onclick="handleSocialAuth('GitHub')" class="group relative flex items-center justify-center gap-2 py-3 px-4 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl font-medium transition-all transform hover:scale-105 hover:bg-white/20 hover:shadow-lg hover:border-gray-400">
+                                <i class="fab fa-github text-gray-300 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-white text-sm">GitHub</span>
+                            </button>
+                            
+                            <button onclick="handleSocialAuth('LinkedIn')" class="group relative flex items-center justify-center gap-2 py-3 px-4 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl font-medium transition-all transform hover:scale-105 hover:bg-white/20 hover:shadow-lg hover:border-blue-400">
+                                <i class="fab fa-linkedin text-blue-400 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-white text-sm">LinkedIn</span>
+                            </button>
+                            
+                            <button onclick="handleSocialAuth('Apple')" class="group relative flex items-center justify-center gap-2 py-3 px-4 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl font-medium transition-all transform hover:scale-105 hover:bg-white/20 hover:shadow-lg hover:border-gray-300">
+                                <i class="fab fa-apple text-gray-300 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-white text-sm">Apple</span>
+                            </button>
+                        </div>
+
+                        <!-- Toggle Login/Register -->
+                        <div class="mt-8 text-center">
+                            <p class="text-white/80">
+                                <span id="toggleText">¿No tienes una cuenta?</span>
+                                <button
+                                    type="button"
+                                    onclick="toggleAuthMode()"
+                                    id="toggleBtn"
+                                    class="ml-2 text-purple-300 hover:text-purple-200 font-semibold transition-colors"
+                                >
+                                    Regístrate
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Info -->
+                <div class="mt-6 text-center text-sm text-white/70 backdrop-blur-sm">
+                    <p class="flex items-center justify-center gap-2">
+                        <i class="fas fa-lock"></i>
+                        Conexión segura mediante OAuth 2.0
+                    </p>
+                    <p class="mt-2">
+                        Al continuar, aceptas nuestros 
+                        <button onclick="alert('Términos y condiciones')" class="text-purple-300 hover:text-purple-200 transition-colors">Términos</button>
+                        y 
+                        <button onclick="alert('Política de privacidad')" class="text-purple-300 hover:text-purple-200 transition-colors">Política de Privacidad</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado de la aplicación
+        let isLogin = true;
+        let isLoading = false;
+
+        // Generar estrellas
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 70 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.width = (Math.random() * 2 + 1) + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
+        }
+
+        // Cambiar tema de colores
+        function changeTheme(theme) {
+            const bg = document.getElementById('background');
+            const themes = {
+                purple: 'linear-gradient(to bottom, #4c1d95, #581c87, #7c2d8e, #c084fc, #e879f9)',
+                blue: 'linear-gradient(to bottom, #1e3a8a, #1e40af, #3b82f6, #60a5fa, #93c5fd)',
+                green: 'linear-gradient(to bottom, #064e3b, #065f46, #059669, #34d399, #6ee7b7)',
+                orange: 'linear-gradient(to bottom, #7c2d12, #9a3412, #ea580c, #fb923c, #fdba74)'
+            };
+            bg.style.background = themes[theme];
+        }
+
+        // Mostrar/ocultar contraseña
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.className = 'fas fa-eye';
+            }
+        }
+
+        // Mostrar mensaje
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = text;
+            messageBox.className = `mb-6 p-4 rounded-xl text-center font-medium backdrop-blur-sm border ${
+                type === 'success' ? 'bg-green-500/20 text-green-100 border-green-400/30' :
+                type === 'error' ? 'bg-red-500/20 text-red-100 border-red-400/30' :
+                'bg-blue-500/20 text-blue-100 border-blue-400/30'
+            }`;
+            messageBox.classList.remove('hidden');
+            
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Toggle entre Login y Registro
+        function toggleAuthMode() {
+            isLogin = !isLogin;
+            
+            const headerTitle = document.getElementById('headerTitle');
+            const headerSubtitle = document.getElementById('headerSubtitle');
+            const nameField = document.getElementById('nameField');
+            const loginOptions = document.getElementById('loginOptions');
+            const toggleText = document.getElementById('toggleText');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const btnText = document.getElementById('btnText');
+            
+            if (isLogin) {
+                headerTitle.textContent = 'Bienvenido de nuevo';
+                headerSubtitle.textContent = 'Ingresa a tu cuenta para continuar';
+                nameField.classList.add('hidden');
+                loginOptions.classList.remove('hidden');
+                toggleText.textContent = '¿No tienes una cuenta?';
+                toggleBtn.textContent = 'Regístrate';
+                btnText.textContent = 'Iniciar Sesión';
+            } else {
+                headerTitle.textContent = 'Únete a nosotros';
+                headerSubtitle.textContent = 'Crea tu cuenta en segundos';
+                nameField.classList.remove('hidden');
+                loginOptions.classList.add('hidden');
+                toggleText.textContent = '¿Ya tienes una cuenta?';
+                toggleBtn.textContent = 'Inicia Sesión';
+                btnText.textContent = 'Crear Cuenta';
+            }
+            
+            // Limpiar formulario
+            document.getElementById('authForm').reset();
+            document.getElementById('messageBox').classList.add('hidden');
+        }
+
+        // Manejo del formulario
+        document.getElementById('authForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (isLoading) return;
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = document.getElementById('name').value;
+            const btnText = document.getElementById('btnText');
+            
+            isLoading = true;
+            btnText.innerHTML = '<div class="spinner inline-block mr-2"></div> Procesando...';
+            
+            setTimeout(() => {
+                isLoading = false;
+                
+                if (isLogin) {
+                    btnText.textContent = 'Iniciar Sesión';
+                    showMessage('✅ Inicio de sesión exitoso!', 'success');
+                    console.log('Login:', { email, password });
+                } else {
+                    btnText.textContent = 'Crear Cuenta';
+                    showMessage('✅ Registro exitoso! Por favor inicia sesión.', 'success');
+                    console.log('Register:', { name, email, password });
+                    
+                    setTimeout(() => {
+                        toggleAuthMode();
+                    }, 2000);
+                }
+            }, 1500);
+        });
+
+        // Autenticación social
+        function handleSocialAuth(provider) {
+            if (isLoading) return;
+            
+            showMessage(`Conectando con ${provider}...`, 'info');
+            
+            setTimeout(() => {
+                showMessage(`✅ Autenticación exitosa con ${provider}!`, 'success');
+                console.log('Social auth:', provider);
+            }, 1500);
+        }
+
+        // Efecto de partículas al mover el mouse
+        document.addEventListener('mousemove', function(e) {
+            if (Math.random() > 0.98) {
+                const particle = document.createElement('div');
+                particle.className = 'star';
+                particle.style.left = e.clientX + 'px';
+                particle.style.top = e.clientY + 'px';
+                particle.style.opacity = '1';
+                particle.style.animation = 'twinkle 1s ease-out forwards';
+                starsContainer.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        });
+    </script>
+</body>
+</html>
