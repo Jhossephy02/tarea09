@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoStore - Catálogo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .moto-card {
+            transition: all 0.3s ease;
+        }
+        .moto-card:hover {
+            transform: translateY(-8px);
+        }
+        .badge-destacada {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 min-h-screen">
+    
+    <!-- Navbar -->
+    <nav class="bg-black/30 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-motorcycle text-white text-xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-white">MotoStore</h1>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <span id="userName" class="text-white/80 hidden md:block"></span>
+                    <button onclick="verFavoritos()" class="text-white/80 hover:text-white transition-colors relative">
+                        <i class="fas fa-heart text-xl"></i>
+                        <span id="favCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden"></span>
+                    </button>
+                    <button onclick="cerrarSesion()" class="bg-red-500/20 hover:bg-red-500/30 text-white px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-blue-600/20 to-cyan-600/20 backdrop-blur-sm py-12 border-b border-white/10">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-white text-center mb-4">
+                <i class="fas fa-motorcycle mr-3"></i>
+                Encuentra tu moto ideal
+            </h2>
+            <p class="text-white/70 text-center max-w-2xl mx-auto">
+                Las mejores motos nuevas y usadas con garantía y financiamiento disponible
+            </p>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Filtros -->
+        <div class="bg-white/5 backdrop-blur-xl rounded-2xl p-6 mb-8 border border-white/10">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- Búsqueda -->
+                <div class="lg:col-span-2">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50"></i>
+                        <input
+                            type="text"
+                            id="buscar"
+                            placeholder="Buscar modelo, marca..."
+                            class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-500 outline-none"
+                            oninput="aplicarFiltros()"
+                        />
+                    </div>
+                </div>
+
+                <!-- Categoría -->
+                <select id="filtroCategoria" onchange="aplicarFiltros()" class="px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">Todas las categorías</option>
+                </select>
+
+                <!-- Marca -->
+                <select id="filtroMarca" onchange="aplicarFiltros()" class="px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">Todas las marcas</option>
+                </select>
+
+                <!-- Estado -->
+                <select id="filtroEstado" onchange="aplicarFiltros()" class="px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">Nuevas y usadas</option>
+                    <option value="nueva">Solo nuevas</option>
+                    <option value="usada">Solo usadas</option>
+                </select>
+            </div>
+
+            <!-- Filtros de precio -->
+            <div class="mt-4 flex gap-4 items-center">
+                <label class="text-white/80 text-sm">Precio:</label>
+                <input type="number" id="precioMin" placeholder="Mín" class="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white w-32 focus:ring-2 focus:ring-blue-500 outline-none" oninput="aplicarFiltros()">
+                <span class="text-white/50">-</span>
+                <input type="number" id="precioMax" placeholder="Máx" class="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white w-32 focus:ring-2 focus:ring-blue-500 outline-none" oninput="aplicarFiltros()">
+                <button onclick="limpiarFiltros()" class="ml-auto text-blue-400 hover:text-blue-300 text-sm">
+                    <i class="fas fa-redo mr-1"></i>Limpiar filtros
+                </button>
+            </div>
+        </div>
+
+        <!-- Contador de resultados -->
+        <div class="text-white/70 mb-4">
+            <span id="contadorResultados">Cargando motos...</span>
+        </div>
+
+        <!-- Grid de motos -->
+        <div id="gridMotos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Las motos se cargan aquí dinámicamente -->
+        </div>
+
+        <!-- Mensaje sin resultados -->
+        <div id="sinResultados" class="hidden text-center py-20">
+            <i class="fas fa-search text-white/20 text-6xl mb-4"></i>
+            <p class="text-white/50 text-xl">No se encontraron motos con esos filtros</p>
+        </div>
+    </div>
+
+    <!-- Modal de detalle -->
+    <div id="modalDetalle" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-slate-900 to-blue-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-white/20">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-6">
+                    <h3 id="modalTitulo" class="text-3xl font-bold text-white"></h3>
+                    <button onclick="cerrarModal()" class="text-white/50 hover:text-white text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div id="modalContenido"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let todasLasMotos = [];
+        let token = localStorage.getItem('token');
+        let user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        // Verificar autenticación
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // Mostrar nombre de usuario
+        document.getElementById('userName').textContent = `Hola, ${user.nombre}`;
+
+        // Cargar datos iniciales
+        async function inicializar() {
+            await Promise.all([
+                cargarMotos(),
+                cargarMarcas(),
+                cargarCategorias()
+            ]);
+        }
+
+        // Cargar motos
+        async function cargarMotos() {
+            try {
+                const response = await fetch(`${API_URL}/motos`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    todasLasMotos = data.data;
+                    mostrarMotos(todasLasMotos);
+                    actualizarContador(todasLasMotos.length);
+                }
+            } catch (error) {
+                console.error('Error al cargar motos:', error);
+                mostrarError('Error al cargar el catálogo');
+            }
+        }
+
+        // Cargar marcas
+        async function cargarMarcas() {
+            try {
+                const response = await fetch(`${API_URL}/marcas`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('filtroMarca');
+                    data.data.forEach(marca => {
+                        const option = document.createElement('option');
+                        option.value = marca.id_marca;
+                        option.textContent = marca.nombre;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar marcas:', error);
+            }
+        }
+
+        // Cargar categorías
+        async function cargarCategorias() {
+            try {
+                const response = await fetch(`${API_URL}/categorias`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('filtroCategoria');
+                    data.data.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.id_categoria;
+                        option.textContent = cat.nombre;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar categorías:', error);
+            }
+        }
+
+        // Mostrar motos
+        function mostrarMotos(motos) {
+            const grid = document.getElementById('gridMotos');
+            const sinResultados = document.getElementById('sinResultados');
+            
+            if (motos.length === 0) {
+                grid.innerHTML = '';
+                sinResultados.classList.remove('hidden');
+                return;
+            }
+            
+            sinResultados.classList.add('hidden');
+            
+            grid.innerHTML = motos.map(moto => `
+                <div class="moto-card bg-white/5 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 group cursor-pointer" onclick="verDetalle(${moto.id_moto})">
+                    ${moto.destacada ? '<div class="badge-destacada bg-yellow-500 text-black text-xs font-bold px-3 py-1 absolute top-3 right-3 rounded-full z-10"><i class="fas fa-star mr-1"></i>Destacada</div>' : ''}
+                    
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="${moto.imagen_principal}" alt="${moto.modelo}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-3 left-3">
+                            <span class="bg-blue-500/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                                ${moto.estado === 'nueva' ? '✨ Nueva' : '🔧 Usada'}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <div class="flex items-start justify-between mb-2">
+                            <div>
+                                <p class="text-white/60 text-sm">${moto.marca_nombre}</p>
+                                <h3 class="text-white font-bold text-lg">${moto.modelo}</h3>
+                            </div>
+                            <button onclick="event.stopPropagation(); agregarFavorito(${moto.id_moto})" class="text-white/50 hover:text-red-500 transition-colors">
+                                <i class="far fa-heart text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="flex gap-2 mb-3 text-xs">
+                            <span class="bg-white/10 text-white/70 px-2 py-1 rounded">${moto.año}</span>
+                            <span class="bg-white/10 text-white/70 px-2 py-1 rounded">${moto.cilindrada}cc</span>
+                            <span class="bg-white/10 text-white/70 px-2 py-1 rounded">${moto.categoria_nombre}</span>
+                        </div>
+                        
+                        <div class="flex items-end justify-between">
+                            <div>
+                                <p class="text-white/50 text-xs">Precio</p>
+                                <p class="text-blue-400 font-bold text-2xl">$${moto.precio.toLocaleString()}</p>
+                            </div>
+                            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                                Ver más
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Aplicar filtros
+        function aplicarFiltros() {
+            const buscar = document.getElementById('buscar').value.toLowerCase();
+            const categoria = document.getElementById('filtroCategoria').value;
+            const marca = document.getElementById('filtroMarca').value;
+            const estado = document.getElementById('filtroEstado').value;
+            const precioMin = parseFloat(document.getElementById('precioMin').value) || 0;
+            const precioMax = parseFloat(document.getElementById('precioMax').value) || Infinity;
+            
+            const filtradas = todasLasMotos.filter(moto => {
+                const cumpleBuscar = !buscar || 
+                    moto.modelo.toLowerCase().includes(buscar) ||
+                    moto.marca_nombre.toLowerCase().includes(buscar) ||
+                    (moto.descripcion && moto.descripcion.toLowerCase().includes(buscar));
+                
+                const cumpleCategoria = !categoria || moto.id_categoria == categoria;
+                const cumpleMarca = !marca || moto.id_marca == marca;
+                const cumpleEstado = !estado || moto.estado === estado;
+                const cumplePrecio = moto.precio >= precioMin && moto.precio <= precioMax;
+                
+                return cumpleBuscar && cumpleCategoria && cumpleMarca && cumpleEstado && cumplePrecio;
+            });
+            
+            mostrarMotos(filtradas);
+            actualizarContador(filtradas.length);
+        }
+
+        // Limpiar filtros
+        function limpiarFiltros() {
+            document.getElementById('buscar').value = '';
+            document.getElementById('filtroCategoria').value = '';
+            document.getElementById('filtroMarca').value = '';
+            document.getElementById('filtroEstado').value = '';
+            document.getElementById('precioMin').value = '';
+            document.getElementById('precioMax').value = '';
+            mostrarMotos(todasLasMotos);
+            actualizarContador(todasLasMotos.length);
+        }
+
+        // Actualizar contador
+        function actualizarContador(cantidad) {
+            document.getElementById('contadorResultados').textContent = 
+                `Mostrando ${cantidad} moto${cantidad !== 1 ? 's' : ''}`;
+        }
+
+        // Ver detalle de moto
+        async function verDetalle(id) {
+            try {
+                const response = await fetch(`${API_URL}/motos/${id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const moto = data.data;
+                    document.getElementById('modalTitulo').textContent = `${moto.marca_nombre} ${moto.modelo}`;
+                    document.getElementById('modalContenido').innerHTML = `
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <img src="${moto.imagen_principal}" alt="${moto.modelo}" class="w-full rounded-xl" />
+                            </div>
+                            <div class="text-white">
+                                <div class="mb-4">
+                                    <span class="text-4xl font-bold text-blue-400">$${moto.precio.toLocaleString()}</span>
+                                    <span class="ml-3 text-sm bg-green-500/20 text-green-400 px-3 py-1 rounded-full">
+                                        ${moto.stock} disponibles
+                                    </span>
+                                </div>
+                                
+                                <div class="space-y-3 mb-6">
+                                    <div class="flex justify-between py-2 border-b border-white/10">
+                                        <span class="text-white/60">Año:</span>
+                                        <span class="font-semibold">${moto.año}</span>
+                                    </div>
+                                    <div class="flex justify-between py-2 border-b border-white/10">
+                                        <span class="text-white/60">Cilindrada:</span>
+                                        <span class="font-semibold">${moto.cilindrada}cc</span>
+                                    </div>
+                                    <div class="flex justify-between py-2 border-b border-white/10">
+                                        <span class="text-white/60">Color:</span>
+                                        <span class="font-semibold">${moto.color}</span>
+                                    </div>
+                                    <div class="flex justify-between py-2 border-b border-white/10">
+                                        <span class="text-white/60">Kilometraje:</span>
+                                        <span class="font-semibold">${moto.kilometraje.toLocaleString()} km</span>
+                                    </div>
+                                    <div class="flex justify-between py-2 border-b border-white/10">
+                                        <span class="text-white/60">Transmisión:</span>
+                                        <span class="font-semibold">${moto.transmision}</span>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-white/80 mb-6">${moto.descripcion}</p>
+                                
+                                <div class="flex gap-3">
+                                    <button onclick="solicitarCotizacion(${moto.id_moto})" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-semibold transition-colors">
+                                        <i class="fas fa-envelope mr-2"></i>Cotizar
+                                    </button>
+                                    <button onclick="agregarFavorito(${moto.id_moto})" class="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg transition-colors">
+                                        <i class="far fa-heart text-xl"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('modalDetalle').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Cerrar modal
+        function cerrarModal() {
+            document.getElementById('modalDetalle').classList.add('hidden');
+        }
+
+        // Agregar a favoritos
+        async function agregarFavorito(idMoto) {
+            try {
+                const response = await fetch(`${API_URL}/favoritos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ id_moto: idMoto })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Moto agregada a favoritos');
+                } else {
+                    alert('⚠️ ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al agregar a favoritos');
+            }
+        }
+
+        // Solicitar cotización
+        function solicitarCotizacion(idMoto) {
+            const mensaje = prompt('¿Qué te gustaría saber sobre esta moto?');
+            if (mensaje) {
+                const telefono = prompt('Déjanos tu teléfono para contactarte:');
+                if (telefono) {
+                    enviarCotizacion(idMoto, mensaje, telefono);
+                }
+            }
+        }
+
+        // Enviar cotización
+        async function enviarCotizacion(idMoto, mensaje, telefono) {
+            try {
+                const response = await fetch(`${API_URL}/cotizaciones`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        id_moto: idMoto,
+                        mensaje: mensaje,
+                        telefono_contacto: telefono
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Cotización enviada! Te contactaremos pronto.');
+                    cerrarModal();
+                } else {
+                    alert('❌ Error al enviar cotización');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al enviar cotización');
+            }
+        }
+
+        // Ver favoritos
+        function verFavoritos() {
+            alert('Función de favoritos en desarrollo');
+        }
+
+        // Cerrar sesión
+        function cerrarSesion() {
+            if (confirm('¿Deseas cerrar sesión?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Mostrar error
+        function mostrarError(mensaje) {
+            alert(mensaje);
+        }
+
+        // Inicializar al cargar la página
+        inicializar();
+    </script>
+</body>
+</html>
