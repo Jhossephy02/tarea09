@@ -465,27 +465,29 @@
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    if (isLogin) {
-                        // Guardar token y usuario
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('user', JSON.stringify(data.user));
-                        
-                        showMessage(`✅ Bienvenido ${data.user.nombre}!`, 'success');
-                        
-                        // Redirigir a la ventana de carga
-                        setTimeout(() => {
-                            window.location.href = 'loading.html'; // <--- ¡AQUÍ ESTÁ EL CAMBIO!
-                        }, 1500);
-                    } else {
-                        showMessage('✅ Cuenta creada exitosamente! Ahora puedes iniciar sesión.', 'success');
-                        
-                        setTimeout(() => {
-                            toggleAuthMode();
-                            document.getElementById('email').value = email;
-                        }, 2000);
-                    }
+    if (isLogin) {
+        // Guardar token y usuario
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        showMessage(`✅ Bienvenido ${data.user.nombre}!`, 'success');
+        
+        // Redirigir según el rol
+        setTimeout(() => {
+            if (data.user.rol === 'admin' || data.user.rol === 'vendedor') {
+                // Usuarios con permisos administrativos
+                window.location.href = 'admin-loading.html';
+            } else {
+                // Clientes normales
+                window.location.href = 'loading.html';
+            }
+        }, 1500);
+    } else {
+        showMessage('✅ Registro exitoso! Ahora puedes iniciar sesión.', 'success');
+        toggleAuthMode();
+    }
                 } else {
-                    showMessage(`❌ ${data.error || 'Error en la operación'}`, 'error');
+                    showMessage(`❌ ${data.message || 'Ocurrió un error. Intenta nuevamente.'}`, 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);

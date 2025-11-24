@@ -201,6 +201,80 @@ function insertarDatosPrueba() {
     });
 }
 
+// AGREGAR DESPUÉS DE insertarDatosPrueba()
+
+async function crearUsuarioAdmin() {
+    db.get('SELECT id_usuario FROM usuarios WHERE rol = "admin"', async (err, row) => {
+        if (!row) {
+            console.log('\n╔════════════════════════════════════════╗');
+            console.log('║   CREANDO USUARIO ADMINISTRADOR        ║');
+            console.log('╚════════════════════════════════════════╝\n');
+            
+            try {
+                // Admin principal
+                const adminEmail = 'admin@motostore.com';
+                const adminPassword = 'Admin123!';
+                const adminHash = await bcrypt.hash(adminPassword, 10);
+                
+                await new Promise((resolve, reject) => {
+                    db.run(`
+                        INSERT INTO usuarios (nombre_completo, email, password_hash, telefono, rol, estado)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    `, [
+                        'Administrador Principal',
+                        adminEmail,
+                        adminHash,
+                        '+51 999 888 777',
+                        'admin',
+                        'activo'
+                    ], function(err) {
+                        if (err) reject(err);
+                        else resolve(this.lastID);
+                    });
+                });
+
+                // Vendedor de ejemplo
+                const vendedorPassword = 'Vendedor123!';
+                const vendedorHash = await bcrypt.hash(vendedorPassword, 10);
+                
+                await new Promise((resolve, reject) => {
+                    db.run(`
+                        INSERT INTO usuarios (nombre_completo, email, password_hash, telefono, rol, estado)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    `, [
+                        'Vendedor Ejemplo',
+                        'vendedor@motostore.com',
+                        vendedorHash,
+                        '+51 999 777 666',
+                        'vendedor',
+                        'activo'
+                    ], function(err) {
+                        if (err) reject(err);
+                        else resolve(this.lastID);
+                    });
+                });
+
+                console.log('✅ Usuarios del sistema creados:\n');
+                console.log('   👤 ADMINISTRADOR:');
+                console.log('      Email:    admin@motostore.com');
+                console.log('      Password: Admin123!');
+                console.log('      Acceso:   Panel completo de administración\n');
+                
+                console.log('   👤 VENDEDOR:');
+                console.log('      Email:    vendedor@motostore.com');
+                console.log('      Password: Vendedor123!');
+                console.log('      Acceso:   Gestión de inventario y cotizaciones\n');
+                
+                console.log('   ⚠️  IMPORTANTE: Cambia estas contraseñas después del primer login\n');
+                
+            } catch (error) {
+                console.error('❌ Error al crear usuarios del sistema:', error);
+            }
+        } else {
+            console.log('ℹ️  Usuario administrador ya existe');
+        }
+    });
+}
 // Middleware para verificar token
 const verificarToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
@@ -596,6 +670,234 @@ app.get('/api/test', (req, res) => {
 // Ruta principal
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/login.html'));
+});
+
+// Agregar al final de server.js
+
+// ============================================
+// RUTAS DE ADMINISTRACIÓN
+// ============================================
+
+// Middleware para verificar rol de administrador
+const verificarAdmin = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    
+    if (!token) {
+        return res.status(403).json({ error: 'Token no proporcionado' });
+    }
+    
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ error: 'Token inválido' });
+        }
+        
+        if (decoded.rol !== 'admin' && decoded.rol !== 'vendedor') {
+            return res.status(403).json({ error: 'Acceso no autorizado' });
+        }
+        
+        req.userId = decoded.id;
+        req.userRol = decoded.rol;
+        next();
+    });
+};
+
+// Obtener estadísticas del dashboard
+app.get('/api/admin/estadisticas', verificarAdmin, (req, res) => {
+    db.serialize(() => {
+        // Total de ventas (simulado)
+        const totalVentas = 856891;
+        
+        // Total de motos
+        db.get('SELECT SUM(stock) as total FROM motos', (err, row) => {
+            const totalMotos = row ? row.total : 0;
+            
+            // Total de clientes
+            db.get('SELECT COUNT(*) as total FROM usuarios WHERE rol = "cliente"', (err, rowClientes) => {
+                const totalClientes = rowClientes ? rowClientes.total : 0;
+                
+                // Total de cotizaciones
+                db.get('SELECT COUNT(*) as total FROM cotizaciones', (err, rowCotizaciones) => {
+                    const totalCotizaciones = rowCotizaciones ? rowCotizaciones.total : 0;
+                    
+                    res.json({
+                        success: true,
+                        data: {
+                            totalVentas,
+                            totalMotos,
+                            totalClientes,
+                            totalCotizaciones
+                        }
+                    });
+                });
+            });
+        });
+    });
+});
+
+// Agregar nueva moto
+app.post('/api/admin/motos', verificarAdmin, (req, res) => {
+    const {
+        modelo, id_marca, id_categoria, año, precio, stock,
+        cilindrada, color, estado, kilometraje, descripcion,
+        imagen_principal, destacada
+    } = req.body;
+    
+    if (!modelo || !id_marca || !id_categoria || !año || !precio || stock === undefined) {
+        return res.status(400).json({ error: 'Campos requeridos faltantes' });
+    }
+    
+    db.run(`
+        INSERT INTO motos (
+            modelo, id_marca, id_categoria, año, precio, stock,
+            cilindrada, color, estado, kilometraje, descripcion,
+            imagen_principal, destacada
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+        modelo, id_marca, id_categoria, año, precio, stock,
+        cilindrada || null, color || null, estado || 'nueva',
+        kilometraje || 0, descripcion || null,
+        imagen_principal || null, destacada || 0
+    ], function(err) {
+        if (err) {
+            return res.status(500).json({ error: 'Error al crear moto' });
+        }
+        
+        res.status(201).json({
+            success: true,
+            message: 'Moto agregada exitosamente',
+            motoId: this.lastID
+        });
+    });
+});
+
+// Actualizar moto
+app.put('/api/admin/motos/:id', verificarAdmin, (req, res) => {
+    const { id } = req.params;
+    const {
+        modelo, id_marca, id_categoria, año, precio, stock,
+        cilindrada, color, estado, kilometraje, descripcion,
+        imagen_principal, destacada
+    } = req.body;
+    
+    db.run(`
+        UPDATE motos SET
+            modelo = ?, id_marca = ?, id_categoria = ?, año = ?,
+            precio = ?, stock = ?, cilindrada = ?, color = ?,
+            estado = ?, kilometraje = ?, descripcion = ?,
+            imagen_principal = ?, destacada = ?
+        WHERE id_moto = ?
+    `, [
+        modelo, id_marca, id_categoria, año, precio, stock,
+        cilindrada, color, estado, kilometraje, descripcion,
+        imagen_principal, destacada, id
+    ], function(err) {
+        if (err) {
+            return res.status(500).json({ error: 'Error al actualizar moto' });
+        }
+        
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Moto no encontrada' });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Moto actualizada exitosamente'
+        });
+    });
+});
+
+// Eliminar moto
+app.delete('/api/admin/motos/:id', verificarAdmin, (req, res) => {
+    const { id } = req.params;
+    
+    db.run('DELETE FROM motos WHERE id_moto = ?', [id], function(err) {
+        if (err) {
+            return res.status(500).json({ error: 'Error al eliminar moto' });
+        }
+        
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Moto no encontrada' });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Moto eliminada exitosamente'
+        });
+    });
+});
+
+// Obtener todas las cotizaciones (admin)
+app.get('/api/admin/cotizaciones', verificarAdmin, (req, res) => {
+    db.all(`
+        SELECT c.*, u.nombre_completo, u.email, m.modelo, ma.nombre as marca_nombre
+        FROM cotizaciones c
+        JOIN usuarios u ON c.id_usuario = u.id_usuario
+        JOIN motos m ON c.id_moto = m.id_moto
+        LEFT JOIN marcas ma ON m.id_marca = ma.id_marca
+        ORDER BY c.fecha_cotizacion DESC
+        LIMIT 50
+    `, (err, cotizaciones) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error al obtener cotizaciones' });
+        }
+        
+        res.json({
+            success: true,
+            data: cotizaciones
+        });
+    });
+});
+
+// Actualizar estado de cotización
+app.put('/api/admin/cotizaciones/:id', verificarAdmin, (req, res) => {
+    const { id } = req.params;
+    const { estado } = req.body;
+    
+    if (!['pendiente', 'respondida', 'cerrada'].includes(estado)) {
+        return res.status(400).json({ error: 'Estado inválido' });
+    }
+    
+    db.run(
+        'UPDATE cotizaciones SET estado = ? WHERE id_cotizacion = ?',
+        [estado, id],
+        function(err) {
+            if (err) {
+                return res.status(500).json({ error: 'Error al actualizar cotización' });
+            }
+            
+            res.json({
+                success: true,
+                message: 'Cotización actualizada'
+            });
+        }
+    );
+});
+
+// Reporte de ventas por período
+app.get('/api/admin/reportes/ventas', verificarAdmin, (req, res) => {
+    const { periodo } = req.query; // 'dia', 'semana', 'mes', 'año'
+    
+    // Simulación de datos de ventas
+    const ventasData = {
+        dia: [
+            { fecha: '2024-01-01', total: 12500, unidades: 3 },
+            { fecha: '2024-01-02', total: 15800, unidades: 4 },
+            { fecha: '2024-01-03', total: 9200, unidades: 2 }
+        ],
+        semana: [
+            { semana: 'Sem 1', total: 45000, unidades: 12 },
+            { semana: 'Sem 2', total: 52000, unidades: 15 }
+        ],
+        mes: [
+            { mes: 'Enero', total: 180000, unidades: 45 },
+            { mes: 'Febrero', total: 195000, unidades: 52 }
+        ]
+    };
+    
+    res.json({
+        success: true,
+        data: ventasData[periodo] || ventasData.mes
+    });
 });
 
 // Iniciar servidor

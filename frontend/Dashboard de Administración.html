@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - MotoStore</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    
+    <!-- Navegación -->
+    <nav class="bg-black/30 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <a href="#" class="text-2xl font-bold text-white flex items-center">
+                    <i class="fas fa-chart-line mr-2 text-blue-400"></i>
+                    MotoStore Admin
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <button onclick="alternarTema()" class="text-white/80 hover:text-white transition-colors">
+                        <i id="themeIcon" class="fas fa-sun text-xl"></i>
+                    </button>
+                    
+                    <a href="Catálogo.html" class="text-white/80 hover:text-white transition-colors">
+                        <i class="fas fa-store mr-1"></i> Ver Tienda
+                    </a>
+                    
+                    <button onclick="cerrarSesion()" class="text-white/80 hover:text-white transition-colors">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-extrabold text-gray-800 dark:text-white mb-8">
+            Panel de Control - Administración
+        </h1>
+
+        <!-- Estadísticas Principales -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">Ventas Totales</p>
+                        <h3 class="text-3xl font-bold mt-2" id="totalVentas">$0</h3>
+                        <p class="text-xs mt-1 opacity-70">+12.5% vs mes anterior</p>
+                    </div>
+                    <i class="fas fa-dollar-sign text-5xl opacity-20"></i>
+                </div>
+            </div>
+
+            <div class="stat-card bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl shadow-lg text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">Motos Vendidas</p>
+                        <h3 class="text-3xl font-bold mt-2" id="totalMotos">0</h3>
+                        <p class="text-xs mt-1 opacity-70">36 unidades</p>
+                    </div>
+                    <i class="fas fa-motorcycle text-5xl opacity-20"></i>
+                </div>
+            </div>
+
+            <div class="stat-card bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow-lg text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">Clientes</p>
+                        <h3 class="text-3xl font-bold mt-2" id="totalClientes">0</h3>
+                        <p class="text-xs mt-1 opacity-70">1,850 usuarios</p>
+                    </div>
+                    <i class="fas fa-users text-5xl opacity-20"></i>
+                </div>
+            </div>
+
+            <div class="stat-card bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-xl shadow-lg text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">Cotizaciones</p>
+                        <h3 class="text-3xl font-bold mt-2" id="totalCotizaciones">0</h3>
+                        <p class="text-xs mt-1 opacity-70">287 pendientes</p>
+                    </div>
+                    <i class="fas fa-file-invoice text-5xl opacity-20"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Gráfico de Ventas -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                    Ventas Mensuales
+                </h3>
+                <canvas id="ventasChart"></canvas>
+            </div>
+
+            <!-- Gráfico de Categorías -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <i class="fas fa-chart-pie text-green-500 mr-2"></i>
+                    Ventas por Categoría
+                </h3>
+                <canvas id="categoriasChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Motos Vendidas -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg mb-8">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+                Top 5 Motos Más Vendidas
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="border-b border-gray-200 dark:border-gray-700">
+                        <tr>
+                            <th class="text-left py-3 px-4">Ranking</th>
+                            <th class="text-left py-3 px-4">Modelo</th>
+                            <th class="text-left py-3 px-4">Marca</th>
+                            <th class="text-left py-3 px-4">Ventas</th>
+                            <th class="text-left py-3 px-4">Ingresos</th>
+                            <th class="text-left py-3 px-4">Tendencia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topMotos">
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <td class="py-3 px-4"><span class="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold">1</span></td>
+                            <td class="py-3 px-4 font-semibold">CBR 600RR</td>
+                            <td class="py-3 px-4">Honda</td>
+                            <td class="py-3 px-4">45 unidades</td>
+                            <td class="py-3 px-4 text-green-500 font-bold">$562,500</td>
+                            <td class="py-3 px-4"><i class="fas fa-arrow-up text-green-500"></i> 25%</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <td class="py-3 px-4"><span class="bg-gray-400 text-white px-2 py-1 rounded-full text-xs font-bold">2</span></td>
+                            <td class="py-3 px-4 font-semibold">YZF-R6</td>
+                            <td class="py-3 px-4">Yamaha</td>
+                            <td class="py-3 px-4">38 unidades</td>
+                            <td class="py-3 px-4 text-green-500 font-bold">$494,000</td>
+                            <td class="py-3 px-4"><i class="fas fa-arrow-up text-green-500"></i> 18%</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <td class="py-3 px-4"><span class="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold">3</span></td>
+                            <td class="py-3 px-4 font-semibold">CB 190R</td>
+                            <td class="py-3 px-4">Honda</td>
+                            <td class="py-3 px-4">32 unidades</td>
+                            <td class="py-3 px-4 text-green-500 font-bold">$102,400</td>
+                            <td class="py-3 px-4"><i class="fas fa-arrow-down text-red-500"></i> -5%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cotizaciones Recientes -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-clock text-purple-500 mr-2"></i>
+                Cotizaciones Pendientes
+            </h3>
+            <div id="cotizacionesPendientes" class="space-y-3">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        // Tema
+        function alternarTema() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+
+        function aplicarTemaInicial() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (savedTheme === 'light') {
+                html.classList.remove('dark');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // Cargar estadísticas
+        async function cargarEstadisticas() {
+            // Simulación de datos (reemplazar con API real)
+            document.getElementById('totalVentas').textContent = '$856,891';
+            document.getElementById('totalMotos').textContent = '36';
+            document.getElementById('totalClientes').textContent = '1,850';
+            document.getElementById('totalCotizaciones').textContent = '287';
+        }
+
+        // Gráfico de Ventas
+        function crearGraficoVentas() {
+            const ctx = document.getElementById('ventasChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Ventas ($)',
+                        data: [65000, 78000, 82000, 91000, 95000, 105000],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de Categorías
+        function crearGraficoCategorias() {
+            const ctx = document.getElementById('categoriasChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Deportivas', 'Scooters', 'Cruisers', 'Touring', 'Off-Road'],
+                    datasets: [{
+                        data: [35, 25, 20, 12, 8],
+                        backgroundColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(34, 197, 94)',
+                            'rgb(251, 146, 60)',
+                            'rgb(168, 85, 247)',
+                            'rgb(236, 72, 153)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        // Inicializar
+        window.onload = function() {
+            aplicarTemaInicial();
+            cargarEstadisticas();
+            crearGraficoVentas();
+            crearGraficoCategorias();
+        };
+    </script>
+</body>
+</html>    

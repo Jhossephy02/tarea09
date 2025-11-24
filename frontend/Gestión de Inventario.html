@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - MotoStore Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    
+    <nav class="bg-black/30 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <a href="admin-dashboard.html" class="text-2xl font-bold text-white flex items-center">
+                    <i class="fas fa-boxes mr-2 text-blue-400"></i>
+                    Inventario
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <button onclick="alternarTema()" class="text-white/80 hover:text-white transition-colors">
+                        <i id="themeIcon" class="fas fa-sun text-xl"></i>
+                    </button>
+                    <a href="admin-dashboard.html" class="text-white/80 hover:text-white transition-colors">
+                        <i class="fas fa-arrow-left mr-1"></i> Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-800 dark:text-white">
+                Gestión de Inventario
+            </h1>
+            <button onclick="abrirModalNuevaMoto()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center">
+                <i class="fas fa-plus mr-2"></i> Agregar Moto
+            </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="text" id="buscarMoto" placeholder="Buscar por modelo..." class="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+            
+            <select id="filtroMarca" class="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                <option value="">Todas las marcas</option>
+            </select>
+            
+            <select id="filtroStock" class="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                <option value="">Todo el stock</option>
+                <option value="bajo">Stock bajo (< 5)</option>
+                <option value="agotado">Sin stock</option>
+            </select>
+            
+            <button onclick="aplicarFiltros()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
+                <i class="fas fa-filter mr-2"></i> Filtrar
+            </button>
+        </div>
+
+        <!-- Tabla de Inventario -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                        <tr>
+                            <th class="text-left py-4 px-4 font-semibold">Imagen</th>
+                            <th class="text-left py-4 px-4 font-semibold">Modelo</th>
+                            <th class="text-left py-4 px-4 font-semibold">Marca</th>
+                            <th class="text-left py-4 px-4 font-semibold">Categoría</th>
+                            <th class="text-left py-4 px-4 font-semibold">Precio</th>
+                            <th class="text-left py-4 px-4 font-semibold">Stock</th>
+                            <th class="text-left py-4 px-4 font-semibold">Estado</th>
+                            <th class="text-left py-4 px-4 font-semibold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaInventario">
+                        <!-- Se llenará dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Agregar/Editar Moto -->
+    <div id="modalMoto" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[100] hidden">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-3 mb-4">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white" id="tituloModal">Nueva Motocicleta</h3>
+                <button onclick="cerrarModalMoto()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="formMoto" class="space-y-4">
+                <input type="hidden" id="motoId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Modelo *</label>
+                        <input type="text" id="motoModelo" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Marca *</label>
+                        <select id="motoMarca" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                            <option value="">Seleccionar</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Categoría *</label>
+                        <select id="motoCategoria" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                            <option value="">Seleccionar</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Año *</label>
+                        <input type="number" id="motoAno" min="2000" max="2025" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Precio (USD) *</label>
+                        <input type="number" id="motoPrecio" step="0.01" min="0" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Stock *</label>
+                        <input type="number" id="motoStock" min="0" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Cilindrada (cc)</label>
+                        <input type="number" id="motoCilindrada" min="50" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Color</label>
+                        <input type="text" id="motoColor" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Estado *</label>
+                        <select id="motoEstado" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                            <option value="nueva">Nueva</option>
+                            <option value="usada">Usada</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Kilometraje</label>
+                        <input type="number" id="motoKilometraje" min="0" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Descripción</label>
+                    <textarea id="motoDescripcion" rows="3" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">URL de Imagen</label>
+                    <input type="url" id="motoImagen" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
+                </div>
+                
+                <div class="flex items-center">
+                    <input type="checkbox" id="motoDestacada" class="mr-2">
+                    <label for="motoDestacada">Marcar como destacada</label>
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-save mr-2"></i> Guardar
+                    </button>
+                    <button type="button" onclick="cerrarModalMoto()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-semibold transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        function alternarTema() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+
+        function abrirModalNuevaMoto() {
+            document.getElementById('tituloModal').textContent = 'Nueva Motocicleta';
+            document.getElementById('formMoto').reset();
+            document.getElementById('motoId').value = '';
+            document.getElementById('modalMoto').classList.remove('hidden');
+        }
+
+        function cerrarModalMoto() {
+            document.getElementById('modalMoto').classList.add('hidden');
+        }
+
+        async function cargarInventario() {
+            try {
+                const response = await fetch(`${API_URL}/motos`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarInventario(data.data);
+                }
+            } catch (error) {
+                console.error('Error al cargar inventario:', error);
+            }
+        }
+
+        function mostrarInventario(motos) {
+            const tabla = document.getElementById('tablaInventario');
+            let html = '';
+            
+            motos.forEach(moto => {
+                const badgeStock = moto.stock === 0 ? 'bg-red-500' : moto.stock < 5 ? 'bg-yellow-500' : 'bg-green-500';
+                
+                html += `
+                    <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="py-3 px-4">
+                            <img src="${moto.imagen_principal || 'https://via.placeholder.com/80'}" alt="${moto.modelo}" class="w-16 h-16 object-cover rounded">
+                        </td>
+                        <td class="py-3 px-4 font-semibold">${moto.modelo}</td>
+                        <td class="py-3 px-4">${moto.marca_nombre}</td>
+                        <td class="py-3 px-4">${moto.categoria_nombre}</td>
+                        <td class="py-3 px-4 text-green-600 font-bold">$${moto.precio.toFixed(2)}</td>
+                        <td class="py-3 px-4">
+                            <span class="${badgeStock} text-white px-3 py-1 rounded-full text-xs font-bold">
+                                ${moto.stock}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 rounded-full text-xs ${moto.estado === 'nueva' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                ${moto.estado.toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="flex space-x-2">
+                                <button onclick="editarMoto(${moto.id_moto})" class="text-blue-500 hover:text-blue-700" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="eliminarMoto(${moto.id_moto})" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tabla.innerHTML = html;
+        }
+
+        function aplicarFiltros() {
+            cargarInventario();
+        }
+
+        async function editarMoto(id) {
+            // Implementar lógica de edición
+            abrirModalNuevaMoto();
+        }
+
+        async function eliminarMoto(id) {
+            if (confirm('¿Estás seguro de eliminar esta motocicleta?')) {
+                // Implementar lógica de eliminación
+                alert('Funcionalidad de eliminación en desarrollo');
+            }
+        }
+
+        window.onload = function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('themeIcon').classList.replace('fa-sun', 'fa-moon');
+            }
+            cargarInventario();
+        };
+    </script>
+</body>
+</html>
